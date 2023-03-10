@@ -1,4 +1,4 @@
-package com.staytuned.staytuned.autth.dto;
+package com.staytuned.staytuned.security.oauth.dto;
 
 import com.staytuned.staytuned.domain.Role;
 import com.staytuned.staytuned.domain.User;
