@@ -3,6 +3,8 @@ package com.staytuned.staytuned.security.jwt;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.JwtException;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
@@ -23,12 +25,12 @@ import static com.staytuned.staytuned.security.jwt.TokenExpiredTime.REFRESH_TOKE
 public class JwtUtil {
     private final Key key;
 
-    public JwtUtil(@Value(value = "${jwt.secret}") final String secret) {
+    public JwtUtil(@Value(value = "${app.jwt.secret}") final String secret) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generateAccessToken(final String email) {
-        return createToken(email, ACCESS_TOKEN_EXPIRATION_TIME.getValue());
+    public String generateAccessToken(final Authentication authentication) {
+        return createToken(authentication, ACCESS_TOKEN_EXPIRATION_TIME.getValue());
     }
 
     public boolean isValidToken(final String token) {
@@ -51,7 +53,10 @@ public class JwtUtil {
         return extractAllClaims(token).get("email", String.class);
     }
 
-    private String createToken(final String email, final int expiredTime) {
+    private String createToken(final Authentication authentication, final int expiredTime) {
+        OAuth2User userPrincipal =  (OAuth2User)authentication.getPrincipal();
+        String email = userPrincipal.getAttribute("email");
+
         HashMap<String, Object> claims = new HashMap<>();
         claims.put("email", email);
 

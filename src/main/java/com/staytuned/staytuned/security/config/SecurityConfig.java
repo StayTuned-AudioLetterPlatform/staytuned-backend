@@ -1,6 +1,7 @@
 package com.staytuned.staytuned.security.config;
 
 import com.staytuned.staytuned.security.oauth.CookieAuthorizationRequestRepository;
+import com.staytuned.staytuned.security.oauth.OAuth2AuthenticationSuccessHandler;
 import com.staytuned.staytuned.security.oauth.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +18,7 @@ public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CookieAuthorizationRequestRepository cookieAuthorizationRequestRepository;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -37,7 +39,9 @@ public class SecurityConfig {
                     .authorizationRequestRepository(cookieAuthorizationRequestRepository)
                 .and()
                 .userInfoEndpoint()
-                        .userService(customOAuth2UserService);
+                        .userService(customOAuth2UserService)
+                .and()
+                .successHandler(oAuth2AuthenticationSuccessHandler);
 
         return http.build();
     }
