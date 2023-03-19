@@ -1,4 +1,4 @@
-package com.staytuned.staytuned.endpoint;
+package com.staytuned.staytuned;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +18,12 @@ public class TestController {
     }
     @PostMapping("/test")
     public void test() throws IOException {
-        log.info("요청 입력");
+        log.info("Post 요청 입력");
+    }
+
+    @GetMapping("/test/get")
+    public void testController() throws IOException {
+        log.info("Get 요청 입력");
     }
 
 }
