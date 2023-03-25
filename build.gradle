@@ -25,6 +25,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation('org.springframework.boot:spring-boot-starter-oauth2-client') // 권한 관련
     implementation('org.springframework.session:spring-session-jdbc') // 권한 관련
+    implementation ('org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE')
 
     runtimeOnly 'mysql:mysql-connector-java'
     runtimeOnly 'com.h2database:h2'
@@ -41,6 +42,8 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'io.findify:s3mock_2.13:0.2.6'
 }
 
 tasks.named('test') {
