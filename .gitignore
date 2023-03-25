@@ -2,6 +2,9 @@
 /.gradle/
 /build/
 /build/classes/java/main/
-
+/out/
 .idea
+
+# .yml file
 application-oauth.yml
+application-aws.yml
