@@ -1,5 +1,6 @@
 package com.staytuned.staytuned.aws;
 
+import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -15,14 +16,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.PostConstruct;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -45,8 +42,21 @@ public class S3UploadComponent {
         return upload(multipartFile, fileName, objectMetadata);
         //업로드된 파일의 S3 URL 주소를 반환
     }
+
+    public void delete(String fileName){
+        amazonS3Client.deleteObject(bucket, fileName);
+    }
+
+    public String getUrl(String objectName) throws AmazonClientException {
+        return amazonS3Client.getUrl(bucket, objectName).toString();
+    }
+
+    public String getObject(String objectName) throws AmazonClientException {
+        return amazonS3Client.getObject(bucket, objectName).toString();
+    }
+
     private String upload(MultipartFile uploadFile, String originFileName, ObjectMetadata objectMetadata) throws IOException {
-        String fileName =  getFileName(originFileName);
+        String fileName =   originFileName + "_" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());;
         return putS3(uploadFile, fileName, objectMetadata);
     }
 
@@ -56,11 +66,6 @@ public class S3UploadComponent {
         objectMetadata.setContentLength(multipartFile.getSize());
         return Optional.of(objectMetadata);
     }
-
-    private String getFileName(String fileName){
-        return fileName + "_" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-    }
-
 
     private String putS3(MultipartFile uploadFile, String fileName, ObjectMetadata objectMetadata) throws IOException {
         try (InputStream inputStream = uploadFile.getInputStream()) {
