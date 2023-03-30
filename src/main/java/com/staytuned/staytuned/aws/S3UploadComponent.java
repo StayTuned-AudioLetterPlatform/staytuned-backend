@@ -10,6 +10,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,6 +53,7 @@ public class S3UploadComponent {
     }
 
     public String getObject(String objectName) throws AmazonClientException {
+        S3Object object =   amazonS3Client.getObject(bucket, objectName);
         return amazonS3Client.getObject(bucket, objectName).toString();
     }
 
