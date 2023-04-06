@@ -1,11 +1,10 @@
 package com.staytuned.staytuned.security.jwt;
 
+import com.staytuned.staytuned.security.oauth.dto.CustomOAuth2User;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.oauth2.jwt.JwtException;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
@@ -48,17 +47,34 @@ public class JwtUtil {
         }
         return false;
     }
+//    // Jwt 로 인증정보를 조회
+//    public Authentication getAuthentication(String token) {
+//
+//        Claims claims = extractAllClaims(token);
+//
+//        // 권한 정보가 없음
+//        if (claims.get(ROLES) == null) {
+//            throw new EntryPointException();
+//        }
+//
+//        OAuth2User userDetails = CustomOAuth2UserService.loadUserByUsername(claims.getSubject());
+//        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+//    }
 
     public String extractEmail(final String token) {
         return extractAllClaims(token).get("email", String.class);
     }
 
     private String createToken(final Authentication authentication, final int expiredTime) {
-        OAuth2User userPrincipal =  (OAuth2User)authentication.getPrincipal();
+        CustomOAuth2User userPrincipal =  (CustomOAuth2User)authentication.getPrincipal();
         String email = userPrincipal.getAttribute("email");
+        String name = userPrincipal.getNickname();
+        Long code = userPrincipal.getUserCd();
 
         HashMap<String, Object> claims = new HashMap<>();
         claims.put("email", email);
+        claims.put("name", name);
+        claims.put("code", code);
 
         return Jwts.builder()
                 .setHeader(settingHeaders())
@@ -82,6 +98,7 @@ public class JwtUtil {
         headers.put("algorithm", SignatureAlgorithm.HS512);
         return  headers;
     }
+
 
     private <T> T extractClaim(final String token, final Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);

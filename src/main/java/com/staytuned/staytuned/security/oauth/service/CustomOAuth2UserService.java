@@ -1,5 +1,6 @@
 package com.staytuned.staytuned.security.oauth.service;
 
+import com.staytuned.staytuned.security.oauth.dto.CustomOAuth2User;
 import com.staytuned.staytuned.security.oauth.dto.OAuthAttributes;
 import com.staytuned.staytuned.domain.User;
 import com.staytuned.staytuned.domain.UserRepository;
@@ -10,11 +11,9 @@ import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserServ
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpSession;
 import java.util.Collections;
 
 @Slf4j
@@ -37,10 +36,12 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         User user = saveOrUpdate(attributes);
 
-        return new DefaultOAuth2User(
+        return new CustomOAuth2User(
                 Collections.singleton(new SimpleGrantedAuthority(user.getRoleKey())),
                 attributes.getAttributes(),
-                attributes.getNameAttributeKey());
+                attributes.getNameAttributeKey(),
+                user.getCode(),
+                user.getName());
     }
 
     private User saveOrUpdate(OAuthAttributes authAttributes){
