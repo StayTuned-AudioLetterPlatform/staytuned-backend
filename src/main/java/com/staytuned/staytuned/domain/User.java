@@ -14,7 +14,7 @@ public class User extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long code;
 
     @Column(nullable = false)
     private String name;
@@ -26,6 +26,7 @@ public class User extends BaseTimeEntity {
     private String picture;
     @Enumerated(EnumType.STRING)
     @Column
+
     private Role role;
 
     @Builder
