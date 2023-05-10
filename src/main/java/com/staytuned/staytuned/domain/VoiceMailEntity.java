@@ -16,8 +16,12 @@ public class VoiceMailEntity extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long code;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "Target_User_FK")
+    private User targetUserFK;
+
     @Column(nullable = false)
-    private String voiceUrl;
+    private String fileUrl;
 
     @Column(nullable = false)
     private String writer;
@@ -25,10 +29,12 @@ public class VoiceMailEntity extends BaseTimeEntity {
     @Column(nullable = false)
     private String iconType;
 
+
     @Builder
-    public VoiceMailEntity(String voiceUrl, String writer, String iconType){
-        this.voiceUrl = voiceUrl;
+    public VoiceMailEntity(String fileUrl, String writer, String iconType, User targetUserFK){
+        this.fileUrl = fileUrl;
         this.iconType = iconType;
         this.writer = writer;
+        this.targetUserFK = targetUserFK;
     }
 }

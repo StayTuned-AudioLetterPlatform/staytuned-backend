@@ -1,10 +1,13 @@
 package com.staytuned.staytuned.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -28,6 +31,11 @@ public class User extends BaseTimeEntity {
     @Column
 
     private Role role;
+
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "targetUserFK", cascade = CascadeType.ALL)
+    private List<VoiceMailEntity> voiceMails = new ArrayList<>();
+
 
     @Builder
     public User(String name, String email, String picture, Role role){
