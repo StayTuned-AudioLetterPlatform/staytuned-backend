@@ -1,23 +1,25 @@
 package com.staytuned.staytuned.endpoint.voicemail;
 
 import com.staytuned.staytuned.domain.VoiceMailEntity;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Date;
 
+@Getter
 @NoArgsConstructor
 public class VoicemailResponseDto {
     private Long code;
     private String writer;
-    private String voiceFileUrl;
+    private String fileUrl;
     private String iconType;
     private LocalDateTime date;
 
     public VoicemailResponseDto (VoiceMailEntity entity){
         this.code = entity.getCode();
         this.iconType= entity.getIconType();
-        this.voiceFileUrl = entity.getVoiceUrl();
+        this.fileUrl = entity.getFileUrl();
         this.date = entity.getCreatedDate();
         this.writer = entity.getWriter();
     }
