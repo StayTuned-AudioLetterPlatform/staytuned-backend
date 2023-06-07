@@ -4,11 +4,15 @@ import com.staytuned.staytuned.aws.S3UploadComponent;
 import com.staytuned.staytuned.security.jwt.LoginUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
+import java.net.URI;
+
 
 @Slf4j
 @RequiredArgsConstructor
@@ -21,12 +25,12 @@ public class VoicemailController {
     private final UserStringDecoder userStringDecoder;
 
     @PostMapping("/save")
-    public Long  save(@RequestBody VoicemailRequestDto requestDto)  {
+    public Long save(@RequestBody VoicemailRequestDto requestDto) {
         return voicemailService.save(requestDto);
     }
 
     @PostMapping("/file/upload")
-    public String upload(@RequestParam("data") MultipartFile  file) throws  IOException{
+    public String upload(@RequestParam("data") MultipartFile file) throws IOException {
         return s3UploadComponent.upload(file);
     }
 
@@ -36,14 +40,17 @@ public class VoicemailController {
     }
 
     @GetMapping("List/{value}")
-    public VoicemailResponseDto getList(@PathVariable("value") String value) throws Exception {
-        Long id =  Long.parseLong(userStringDecoder.decoder(value));
-        return voicemailService.getListObjet(id, false);
+    public ResponseEntity<VoicemailResponseDto> getList(@PathVariable String value) throws Exception {
+        Long id = Long.parseLong(userStringDecoder.decoder(value));
+        VoicemailResponseDto voicemailResponseDto = voicemailService.getListObjet(id, false);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(URI.create("http://localhost:3000/main"));
+        return new ResponseEntity<>(voicemailResponseDto, headers, HttpStatus.SEE_OTHER);
     }
 
     @PostMapping("/delete")
-    public void  delete(Long code) throws IOException {
-         voicemailService.delete(code);
+    public void delete(Long code) throws IOException {
+        voicemailService.delete(code);
     }
 
     //파일 다운로드 로직 작성하기
