@@ -2,20 +2,15 @@ package com.staytuned.staytuned.endpoint.voicemail;
 
 import com.staytuned.staytuned.aws.S3UploadComponent;
 import com.staytuned.staytuned.domain.User;
-import com.staytuned.staytuned.domain.UserRepository;
 import com.staytuned.staytuned.domain.VoiceMailEntity;
 import com.staytuned.staytuned.domain.VoiceMailRepository;
-import com.staytuned.staytuned.endpoint.user.UserResponseDto;
 import com.staytuned.staytuned.endpoint.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -39,11 +34,18 @@ public class VoicemailService {
         return voiceMailRepository.save(voiceMail).getCode();
     }
 
-    public List<VoicemailResponseDto> getListObjet(Long code){
+    public VoicemailResponseDto getListObjet(Long code, boolean isUser){
         User user = userService.fineEntity(code);
-        return voiceMailRepository.findByTargetUserFK(user).stream()
-                .map(VoicemailResponseDto:: new)
+        List<VoicemailDto> voicemailList = voiceMailRepository.findByTargetUserFK(user).stream()
+                .map(VoicemailDto:: new)
                 .collect(Collectors.toList());
+
+        return VoicemailResponseDto.builder()
+                .voicemailList(voicemailList)
+                .userName(user.getName())
+                .userCode(user.getCode())
+                .isUser(isUser)
+                .build();
     }
 
 
