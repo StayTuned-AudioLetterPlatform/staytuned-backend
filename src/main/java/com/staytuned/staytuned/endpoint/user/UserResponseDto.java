@@ -1,6 +1,6 @@
 package com.staytuned.staytuned.endpoint.user;
 
-import com.staytuned.staytuned.endpoint.voicemail.VoicemailResponseDto;
+import com.staytuned.staytuned.endpoint.voicemail.VoicemailDto;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
@@ -9,5 +9,5 @@ import java.util.List;
 public class UserResponseDto {
     private Long code;
     private String name;
-    private List<VoicemailResponseDto> voicemails;
+    private List<VoicemailDto> voicemails;
 }

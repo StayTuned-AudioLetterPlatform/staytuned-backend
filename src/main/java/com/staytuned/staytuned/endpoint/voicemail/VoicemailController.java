@@ -4,14 +4,10 @@ import com.staytuned.staytuned.aws.S3UploadComponent;
 import com.staytuned.staytuned.security.jwt.LoginUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
-import java.net.URI;
+
 
 
 @Slf4j
@@ -34,18 +30,15 @@ public class VoicemailController {
         return s3UploadComponent.upload(file);
     }
 
-    @GetMapping("/getList")
-    public VoicemailResponseDto getList(@LoginUser(required = false) Long id) { // @LoginUser 로직 만들기.
+    @GetMapping("/my")
+    public VoicemailResponseDto getUserList(@LoginUser Long id) { // @LoginUser 로직 만들기.
         return voicemailService.getListObjet(id, true);
     }
 
-    @GetMapping("List/{value}")
-    public ResponseEntity<VoicemailResponseDto> getList(@PathVariable String value) throws Exception {
+    @GetMapping("/user")
+    public VoicemailResponseDto getTargetList(@RequestParam("userID") String value) throws Exception {
         Long id = Long.parseLong(userStringDecoder.decoder(value));
-        VoicemailResponseDto voicemailResponseDto = voicemailService.getListObjet(id, false);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create("http://localhost:3000/main"));
-        return new ResponseEntity<>(voicemailResponseDto, headers, HttpStatus.SEE_OTHER);
+        return voicemailService.getListObjet(id, false);
     }
 
     @PostMapping("/delete")

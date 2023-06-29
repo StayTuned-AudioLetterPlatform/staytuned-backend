@@ -13,7 +13,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
+
 
 @Configuration
 @EnableWebSecurity
@@ -36,15 +36,13 @@ public class SecurityConfig {
                 .and()
 //                .authorizeRequests(authorizeRequests ->
 //                        authorizeRequests
-//                                .antMatchers("/api/v1/sign-up").permitAll()
-//                                .antMatchers("/api/v1/login").permitAll()
-//                                .anyRequest().authenticated()
+//                                .antMatchers("/api/v1/voicemail/*").permitAll()
+//                                .anyRequest().authenticated())
 
                 .oauth2Login()
                 .authorizationEndpoint()
                     .authorizationRequestRepository(cookieAuthorizationRequestRepository)
                 .and()
-
                 .userInfoEndpoint()
                         .userService(customOAuth2UserService)
                 .and()

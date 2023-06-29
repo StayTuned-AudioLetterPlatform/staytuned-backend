@@ -28,6 +28,7 @@ public class VoicemailService {
         VoiceMailEntity voiceMail =  VoiceMailEntity.builder()
                 .fileUrl(requestDto.getFileUrl())
                 .iconType(requestDto.getIconType())
+                .writer(requestDto.getWriter())
                 .targetUserFK(userService.fineEntity(requestDto.getTargetUserCd()))
                 .build();
 
@@ -48,10 +49,8 @@ public class VoicemailService {
                 .build();
     }
 
-
     public void delete(Long code){
          voiceMailRepository.deleteById(code);
-
     }
 
 }
