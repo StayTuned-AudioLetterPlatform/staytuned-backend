@@ -22,6 +22,7 @@ import static com.staytuned.staytuned.security.jwt.TokenExpiredTime.REFRESH_TOKE
 @Slf4j
 @Component
 public class JwtUtil {
+    // "Brarer 추가 해서 생성하기"
     private final Key key;
 
     public JwtUtil(@Value(value = "${app.jwt.secret}") final String secret) {
@@ -63,6 +64,10 @@ public class JwtUtil {
 
     public String extractEmail(final String token) {
         return extractAllClaims(token).get("email", String.class);
+    }
+
+    public Long extractCode(final String token) {
+        return extractAllClaims(token).get("code", Long.class);
     }
 
     private String createToken(final Authentication authentication, final int expiredTime) {
