@@ -16,10 +16,10 @@ public class VoicemailDto {
     private String iconType;
     private LocalDateTime date;
 
-    public VoicemailDto(VoiceMailEntity entity){
+    public VoicemailDto(VoiceMailEntity entity, boolean isUser){
         this.code = entity.getCode();
         this.iconType= entity.getIconType();
-        this.fileUrl = entity.getFileUrl();
+        if(isUser) this.fileUrl = entity.getFileUrl();
         this.date = entity.getCreatedDate();
         this.writer = entity.getWriter();
     }

@@ -37,8 +37,9 @@ public class VoicemailService {
 
     public VoicemailResponseDto getListObjet(Long code, boolean isUser){
         User user = userService.fineEntity(code);
-        List<VoicemailDto> voicemailList = voiceMailRepository.findByTargetUserFK(user).stream()
-                .map(VoicemailDto:: new)
+        List<VoicemailDto> voicemailList = voiceMailRepository.findByTargetUserFK(user)
+                .stream()
+                .map(entity -> new VoicemailDto(entity, isUser))
                 .collect(Collectors.toList());
 
         return VoicemailResponseDto.builder()
@@ -52,5 +53,4 @@ public class VoicemailService {
     public void delete(Long code){
          voiceMailRepository.deleteById(code);
     }
-
 }
