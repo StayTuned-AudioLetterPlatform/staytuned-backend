@@ -80,7 +80,7 @@ public class JwtUtil {
     }
 
     private Date settingsDate(final int plusTime) {
-        return Date.from(LocalDateTime.now().plusHours(plusTime)
+        return Date.from(LocalDateTime.now().plusMinutes(plusTime)
                 .atZone(ZoneId.systemDefault())
                 .toInstant()
         );
