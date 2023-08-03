@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.function.Function;
 
 import static com.staytuned.staytuned.security.jwt.TokenExpiredTime.ACCESS_TOKEN_EXPIRATION_TIME;
-import static com.staytuned.staytuned.security.jwt.TokenExpiredTime.REFRESH_TOKEN_EXPIRATION_TIME;
 
 @Slf4j
 @Component
@@ -39,28 +38,18 @@ public class JwtUtil {
             return true;
         } catch (MalformedJwtException e) {
             log.error("Invalid JWT token: {}", e.getMessage());
+            throw new MalformedJwtException(e.getMessage());
         } catch (ExpiredJwtException e) {
             log.error("JWT token is expired: {}", e.getMessage());
+            throw new ExpiredJwtException(e.getHeader(), e.getClaims(), e.getMessage());
         } catch (UnsupportedJwtException e) {
             log.error("JWT token is unsupported: {}", e.getMessage());
+            throw new UnsupportedJwtException(e.getMessage());
         } catch (IllegalArgumentException e) {
             log.error("JWT claims string is empty: {}", e.getMessage());
+            throw new IllegalArgumentException(e.getMessage());
         }
-        return false;
     }
-//    // Jwt 로 인증정보를 조회
-//    public Authentication getAuthentication(String token) {
-//
-//        Claims claims = extractAllClaims(token);
-//
-//        // 권한 정보가 없음
-//        if (claims.get(ROLES) == null) {
-//            throw new EntryPointException();
-//        }
-//
-//        OAuth2User userDetails = CustomOAuth2UserService.loadUserByUsername(claims.getSubject());
-//        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
-//    }
 
     public String extractEmail(final String token) {
         return extractAllClaims(token).get("email", String.class);
