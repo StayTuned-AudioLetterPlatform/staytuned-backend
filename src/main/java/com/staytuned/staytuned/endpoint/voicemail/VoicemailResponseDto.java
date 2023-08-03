@@ -1,5 +1,6 @@
 package com.staytuned.staytuned.endpoint.voicemail;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,6 +15,11 @@ public class VoicemailResponseDto {
     private Long userCode;
     private boolean isUser;
 
+    @JsonProperty("isUser")
+    private boolean isUser() {
+        return isUser;
+    }
+
     @Builder
     public VoicemailResponseDto(List<VoicemailDto> voicemailList, String userName, Long userCode, boolean isUser){
         this.voicemailList = voicemailList;
@@ -21,5 +27,4 @@ public class VoicemailResponseDto {
         this.isUser = isUser;
         this.userName = userName;
     }
-
 }
