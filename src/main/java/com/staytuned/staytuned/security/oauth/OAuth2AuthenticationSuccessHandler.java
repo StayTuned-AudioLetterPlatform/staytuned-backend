@@ -2,6 +2,7 @@ package com.staytuned.staytuned.security.oauth;
 
 import com.staytuned.staytuned.security.config.AppProperties;
 import com.staytuned.staytuned.security.jwt.JwtUtil;
+import com.staytuned.staytuned.security.oauth.dto.CustomOAuth2User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -14,6 +15,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Optional;
 
 import static com.staytuned.staytuned.security.oauth.CookieAuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME;
@@ -26,8 +28,6 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final JwtUtil jwtUtil;
     private final CookieAuthorizationRequestRepository cookieAuthorizationRequestRepository;
     private final AppProperties appProperties;
-
-
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -50,15 +50,29 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 //            log.debug("We've got an Unauthorized Redirect URI and can't proceed with the authentication");
 //        }
         String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
-        String accessToken = jwtUtil.generateAccessToken(authentication);
+        String accessToken = jwtUtil.generateAccessToken(authenticationToJwtClaims(authentication));
         return UriComponentsBuilder.fromUriString(targetUrl)
-                .queryParam("access_token", accessToken)
+                .queryParam("access_token", accessToken) //
                 .build().toUriString();
     }
 
     protected void clearAuthenticationAttributes(HttpServletRequest request, HttpServletResponse response) {
         super.clearAuthenticationAttributes(request);
         cookieAuthorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
+    }
+
+    private HashMap<String, Object> authenticationToJwtClaims(final Authentication authentication){
+        CustomOAuth2User userPrincipal =  (CustomOAuth2User)authentication.getPrincipal();
+        String email = userPrincipal.getAttribute("email");
+        String name = userPrincipal.getNickname();
+        Long code = userPrincipal.getUserCd();
+
+        HashMap<String, Object> claims = new HashMap<>();
+        claims.put("email", email);
+        claims.put("name", name);
+        claims.put("code", code);
+
+        return claims;
     }
 
 //    private boolean isAuthorizedRedirectUri(String uri) {

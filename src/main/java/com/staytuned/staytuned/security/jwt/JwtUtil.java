@@ -28,8 +28,8 @@ public class JwtUtil {
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generateAccessToken(final Authentication authentication) {
-        return createToken(authentication, ACCESS_TOKEN_EXPIRATION_TIME.getValue());
+    public String generateAccessToken(final HashMap<String, Object> payload) {
+        return createToken(payload, ACCESS_TOKEN_EXPIRATION_TIME.getValue());
     }
 
     public boolean isValidToken(final String token) {
@@ -59,20 +59,11 @@ public class JwtUtil {
         return extractAllClaims(token).get("code", Long.class);
     }
 
-    private String createToken(final Authentication authentication, final int expiredTime) {
-        CustomOAuth2User userPrincipal =  (CustomOAuth2User)authentication.getPrincipal();
-        String email = userPrincipal.getAttribute("email");
-        String name = userPrincipal.getNickname();
-        Long code = userPrincipal.getUserCd();
-
-        HashMap<String, Object> claims = new HashMap<>();
-        claims.put("email", email);
-        claims.put("name", name);
-        claims.put("code", code);
+    private String createToken(final HashMap<String, Object> payload, final int expiredTime) {
 
         return Jwts.builder()
                 .setHeader(settingHeaders())
-                .setClaims(claims)
+                .setClaims(payload)
                 .setIssuedAt(settingsDate(0))
                 .setExpiration(settingsDate(expiredTime))
                 .signWith(key, SignatureAlgorithm.HS512)
