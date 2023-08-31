@@ -1,26 +1,36 @@
-package aws;
+package com.staytuned.staytuned.aws;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.staytuned.staytuned.StayTunedApplication;
-import com.staytuned.staytuned.aws.S3UploadComponent;
+import com.staytuned.staytuned.endpoint.user.UserService;
+import com.staytuned.staytuned.endpoint.voicemail.VoicemailController;
+import com.staytuned.staytuned.endpoint.voicemail.VoicemailService;
+import com.staytuned.staytuned.security.config.SecurityConfig;
+import com.staytuned.staytuned.security.config.WebConfig;
+import com.staytuned.staytuned.security.jwt.JwtAuthorizationArgumentResolver;
 import io.findify.s3mock.S3Mock;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@Import(S3MockConfig.class)
-@SpringBootTest(classes = StayTunedApplication.class)
+@Import({S3MockConfig.class, S3UploadComponent.class})
+@WebMvcTest(excludeFilters = {
+        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class),
+        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = WebConfig.class),
+        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = JwtAuthorizationArgumentResolver.class)
+})
 public class S3UploaderTest {
     static {
         System.setProperty("com.amazonaws.sdk.disableEc2Metadata", "true");
@@ -35,6 +45,14 @@ public class S3UploaderTest {
     @Autowired
     private S3UploadComponent s3UploadComponent;
 
+    @MockBean
+    private UserService userService;
+
+    @MockBean
+    private VoicemailService voicemailService;
+
+    @MockBean
+    private VoicemailController voicemailController;
 
     @AfterEach
     public void tearDown() {
@@ -48,10 +66,11 @@ public class S3UploaderTest {
         String contentType = "image/png";
         String fileName = "delete";
 
-        MockMultipartFile file = new MockMultipartFile("test", fileName, contentType, "test".getBytes());
+        MockMultipartFile file = new MockMultipartFile(fileName, fileName, contentType, fileName.getBytes());
 
         // when
-        String urlPath = s3UploadComponent.upload(file, fileName);
+        String urlPath = s3UploadComponent.upload(file);
+        System.out.println(urlPath);
 
         // then
         assertThat(urlPath).contains(fileName);
@@ -63,6 +82,7 @@ public class S3UploaderTest {
     void delete() throws IOException {
         //given
         String fileURl = upload();
+
         System.out.println(fileURl);
         String[] URL = fileURl.split("/");
         String uploadFileName = URL[URL.length-1];
