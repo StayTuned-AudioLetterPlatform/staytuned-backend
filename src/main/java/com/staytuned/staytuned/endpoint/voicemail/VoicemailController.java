@@ -18,7 +18,7 @@ public class VoicemailController {
 
     private final VoicemailService voicemailService;
     private final S3UploadComponent s3UploadComponent;
-    private final UserStringDecoder userStringDecoder;
+    private final AES256 aes256;
 
     @PostMapping("/save")
     public Long save(@RequestBody VoicemailRequestDto requestDto) {
@@ -32,16 +32,18 @@ public class VoicemailController {
 
     @GetMapping("/my")
     public VoicemailResponseDto getUserList(@LoginUser Long id) { // @LoginUser 로직 만들기.
-        return voicemailService.getListObjet(id, true);
+        VoicemailResponseDto temp = voicemailService.getListObjet(id, true);
+        log.info(String.valueOf(temp.getIsUser()));
+        return temp;
     }
 
     @GetMapping("/user")
     public VoicemailResponseDto getTargetList(@RequestParam("userID") String value) throws Exception {
-        Long id = Long.parseLong(userStringDecoder.decoder(value));
+        Long id = Long.parseLong(aes256.decoder(value));
         return voicemailService.getListObjet(id, false);
     }
 
-    @PostMapping("/delete")
+    @DeleteMapping("/")
     public void delete(Long code) throws IOException {
         voicemailService.delete(code);
     }

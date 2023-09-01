@@ -16,12 +16,12 @@ public class VoicemailResponseDto {
     private boolean isUser;
 
     @JsonProperty("isUser")
-    private boolean isUser() {
+    public boolean getIsUser() {
         return isUser;
     }
 
     @Builder
-    public VoicemailResponseDto(List<VoicemailDto> voicemailList, String userName, Long userCode, boolean isUser){
+    public VoicemailResponseDto(List<VoicemailDto> voicemailList, String userName, Long userCode,final boolean isUser){
         this.voicemailList = voicemailList;
         this.userCode = userCode;
         this.isUser = isUser;
