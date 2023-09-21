@@ -4,16 +4,16 @@ import com.staytuned.staytuned.domain.*;
 import com.staytuned.staytuned.endpoint.voicemail.AES256;
 import com.staytuned.staytuned.endpoint.voicemail.VoicemailRequestDto;
 import com.staytuned.staytuned.endpoint.voicemail.VoicemailResponseDto;
-
 import com.staytuned.staytuned.security.jwt.JwtUtil;
-import io.jsonwebtoken.ExpiredJwtException;
-import org.aspectj.lang.annotation.Before;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -21,17 +21,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 @ExtendWith(SpringExtension.class)
@@ -156,7 +153,7 @@ public class VoicemailControllerTest {
 
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/voicemail/my")
                         .header("Authorization", "Bearer " + currentJwt))  // 헤더 추가
-                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized())
                 .andReturn();
 
         String responseContent = result.getResponse().getContentAsString();
