@@ -2,6 +2,7 @@ package com.staytuned.staytuned.endpoint.user;
 
 import com.staytuned.staytuned.aws.S3UploadComponent;
 import com.staytuned.staytuned.endpoint.voicemail.VoicemailService;
+import com.staytuned.staytuned.security.jwt.LoginUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -14,11 +15,11 @@ import java.io.IOException;
 @RestController
 public class UserController {
 
+    private final UserService userService;
 
-//    @CrossOrigin
-//    @GetMapping("/v1/api/get")
-//    public String get(){
-//        log.info("controller save");
-//        return voicemailService.getBlob();
-//    }
+    @DeleteMapping("/")
+    public void delete(@LoginUser String email){
+        userService.deleteUser(email);
+    }
+
 }
