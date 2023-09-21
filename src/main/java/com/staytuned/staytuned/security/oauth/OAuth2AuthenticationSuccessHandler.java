@@ -1,5 +1,6 @@
 package com.staytuned.staytuned.security.oauth;
 
+import com.staytuned.staytuned.aws.S3UploadComponent;
 import com.staytuned.staytuned.security.config.AppProperties;
 import com.staytuned.staytuned.security.jwt.JwtUtil;
 import com.staytuned.staytuned.security.oauth.dto.CustomOAuth2User;
@@ -28,31 +29,33 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final JwtUtil jwtUtil;
     private final CookieAuthorizationRequestRepository cookieAuthorizationRequestRepository;
     private final AppProperties appProperties;
+    private final S3UploadComponent s3UploadComponent;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        String targetUrl = determineTargetUrl(request, response, authentication);
-        log.info(targetUrl);
+        CustomOAuth2User userPrincipal =  (CustomOAuth2User)authentication.getPrincipal();
+        String jwt = createJwt(userPrincipal);
+        String targetUrl = determineTargetUrl(request, response, jwt);
 
         if (response.isCommitted()) {
             log.debug("Response has already been committed. Unable to redirect to " + targetUrl);
             return;
         }
+
         clearAuthenticationAttributes(request, response);
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
-
     }
 
-    protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+    protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response, String jwt) {
         Optional<String> redirectUri = CookieUtils.getCookie(request, REDIRECT_URI_PARAM_COOKIE_NAME)
                 .map(Cookie::getValue);
 //        if(redirectUri.isPresent() && !isAuthorizedRedirectUri(redirectUri.get())) {
 //            log.debug("We've got an Unauthorized Redirect URI and can't proceed with the authentication");
 //        }
         String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
-        String accessToken = jwtUtil.generateAccessToken(authenticationToJwtClaims(authentication));
+
         return UriComponentsBuilder.fromUriString(targetUrl)
-                .queryParam("access_token", accessToken) //
+                .queryParam("access_token",jwt )
                 .build().toUriString();
     }
 
@@ -61,8 +64,11 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         cookieAuthorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
     }
 
-    private HashMap<String, Object> authenticationToJwtClaims(final Authentication authentication){
-        CustomOAuth2User userPrincipal =  (CustomOAuth2User)authentication.getPrincipal();
+    private String createJwt(CustomOAuth2User userPrincipal){
+        return jwtUtil.generateAccessToken(authenticationToJwtClaims(userPrincipal));
+    }
+
+    private HashMap<String, Object> authenticationToJwtClaims(CustomOAuth2User userPrincipal){
         String email = userPrincipal.getAttribute("email");
         String name = userPrincipal.getNickname();
         Long code = userPrincipal.getUserCd();

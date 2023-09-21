@@ -18,7 +18,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.ContextConfiguration;
 
 import java.io.IOException;
 
@@ -59,40 +58,39 @@ public class S3UploaderTest {
         s3Mock.stop();
     }
 
-    @Test
-    String  upload() throws IOException {
-        // given
-        String path = "test_image.png";
-        String contentType = "image/png";
-        String fileName = "delete";
+    String path = "test_image.png";
+    String contentType = "image/png";
+    String fileName = "test";
 
+
+    @Test
+    void upload() throws IOException {
+        // given
         MockMultipartFile file = new MockMultipartFile(fileName, fileName, contentType, fileName.getBytes());
 
         // when
-        String urlPath = s3UploadComponent.upload(file);
-        System.out.println(urlPath);
+        String fileUrl  = s3UploadComponent.upload(file, 1L);
+        System.out.println(fileUrl);
 
         // then
-        assertThat(urlPath).contains(fileName);
-
-        return urlPath;
+        assertThat(fileUrl).contains(fileName);
     }
 
     @Test
     void delete() throws IOException {
         //given
-        String fileURl = upload();
+        MockMultipartFile file = new MockMultipartFile(fileName, fileName, contentType, fileName.getBytes());
+        String fileUrl  = s3UploadComponent.upload(file, 1L);
 
-        System.out.println(fileURl);
-        String[] URL = fileURl.split("/");
-        String uploadFileName = URL[URL.length-1];
+        String[] URL = fileUrl.split("/");
+        String uploadFileName = URL[URL.length-2] + "/" + URL[URL.length-1];
 
         //when
         String uploadFileURl = s3UploadComponent.getUrl(uploadFileName).toString();
         s3UploadComponent.delete(uploadFileName);
 
         //then
-        assertThat(fileURl).isEqualTo(uploadFileURl);
+        assertThat(fileUrl).isEqualTo(uploadFileURl);
         assertThrows(AmazonS3Exception.class, () -> s3UploadComponent.getObject(uploadFileName));
 
     }

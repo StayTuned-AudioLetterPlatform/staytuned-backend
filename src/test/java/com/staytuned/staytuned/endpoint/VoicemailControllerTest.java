@@ -6,10 +6,9 @@ import com.staytuned.staytuned.endpoint.voicemail.VoicemailRequestDto;
 import com.staytuned.staytuned.endpoint.voicemail.VoicemailResponseDto;
 
 import com.staytuned.staytuned.security.jwt.JwtUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import io.jsonwebtoken.ExpiredJwtException;
+import org.aspectj.lang.annotation.Before;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -18,26 +17,26 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.assertj.core.api.Assertions.assertThat;
-//
-//@WebMvcTest(controllers = VoicemailController.class
-//        , excludeFilters = {
-//        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class),
-//        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = WebConfig.class),
-//        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = JwtAuthorizationArgumentResolver.class)
-//})
+
+
 @ExtendWith(SpringExtension.class)
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-//@WebMvcTest
 public class VoicemailControllerTest {
 
     @LocalServerPort
@@ -58,15 +57,18 @@ public class VoicemailControllerTest {
     @Autowired
     private JwtUtil jwtUtil;
 
-    @Autowired
+        @Autowired
     private AES256 aes256;
+
+    @Autowired
+    private MockMvc mockMvc;
 
     User testUser;
     String jwt;
 
     @BeforeEach
     public void setup() {
-         testUser = User.builder()
+        testUser = User.builder()
                 .name("test")
                 .email("test@test.com")
                 .picture(null)
@@ -81,7 +83,7 @@ public class VoicemailControllerTest {
         claims.put("code", testUser.getCode());
 
         jwt = jwtUtil.generateAccessToken(claims);
-
+        System.out.println(jwt);
         voiceMailRepository.save(VoiceMailEntity.builder()
                 .writer("test1")
                 .targetUserFK(testUser)
@@ -106,11 +108,11 @@ public class VoicemailControllerTest {
 
     @Test
     @DisplayName("voice mail 편지를 남긴다")
-    void  createVoicemail(){
+    void createVoicemail() {
         //give
         String writer = "currentTestUser";
         String iconType = "1";
-        Long targetUserCd = 1L;
+        Long targetUserCd = testUser.getCode();
         String fileUrl = "http://example/url";
 
         VoicemailRequestDto requestDto = VoicemailRequestDto.builder()
@@ -133,7 +135,7 @@ public class VoicemailControllerTest {
 
     @DisplayName("User 가 본인의 VoicemailList 요청")
     @Test
-    void getMyVoicemailList(){
+    void getMyVoicemailList() {
         //when
         String url = "http://localhost:" + port + "/api/v1/voicemail/my";
         HttpHeaders headers = new HttpHeaders();
@@ -149,23 +151,24 @@ public class VoicemailControllerTest {
 
     @DisplayName("만료된 jwt으로 VoicemailList 요청")
     @Test
-    void getMyVoicemailListWithExpiredToken(){
-        //given
-        String currentJwt = "eyJ0eXBlIjoiSldUIiwiYWxnb3JpdGhtIjoiSFM1MTIiLCJhbGciOiJIUzUxMiJ9.eyJjb2RlIjoxLCJuYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEB0ZXN0LmNvbSIsImlhdCI6MTY5MzM4NDQ4MiwiZXhwIjoxNjkzMzg0NTQyfQ.8m54a6z46LrMSIyTZdbLTiT-V7uWaS3K8f2o0BxynjAPRjbD1tmaUZ38mijGC4pHTFMPkCj0s0p94gxTZPSq1Q";
+    void getMyVoicemailListWithExpiredToken() throws Exception {
+        String currentJwt = "eyJ0eXBlIjoiSldUIiwiYWxnb3JpdGhtIjoiSFM1MTIiLCJhbGciOiJIUzUxMiJ9.eyJjb2RlIjoxLCJuYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEB0ZXN0LmNvbSIsImlhdCI6MTY5NTEwNjg3MSwiZXhwIjoxNjk1MTA2OTMxfQ.KaaMjotAsEUZtxfVkKvqbJwQEUnWmvp1uxRs6Pw07wy2qvPKa09VMxftPgDIYqLie0npOLEH11vGPPigRWSjbw";
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer "+ currentJwt); // set the header value
-        HttpEntity<String> request = new HttpEntity<String>(null, headers);
-        ResponseEntity<VoicemailResponseDto> response = restTemplate.exchange(
-                "http://localhost:8080/api/v1/voicemail/getList", HttpMethod.GET, request, VoicemailResponseDto.class);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/voicemail/my")
+                        .header("Authorization", "Bearer " + currentJwt))  // 헤더 추가
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andReturn();
+
+        String responseContent = result.getResponse().getContentAsString();
+        System.out.println(responseContent);
+        assertTrue(responseContent.contains("JWT token is expired"),
+                "Response should contain the handled exception message.");
     }
 
     @DisplayName("공유된 url로 user의 VoicemailList요청")
     @Test
-    void getOtherVoicemailList(){
-        String encodingString = aes256.AESEncrypt("1");;
-        System.out.println(encodingString);
+    void getOtherVoicemailList() {
+        String encodingString = aes256.AESEncrypt(String.valueOf(testUser.getCode()));
         //when
         String url = "http://localhost:" + port + "/api/v1/voicemail/user?userID=" + encodingString;
         ResponseEntity<VoicemailResponseDto> response = restTemplate.getForEntity(url, VoicemailResponseDto.class);
@@ -178,7 +181,7 @@ public class VoicemailControllerTest {
 
     @DisplayName("Voicemail을 삭제 한다")
     @Test
-    void deleteVoicemail(){
+    void deleteVoicemail() {
 
     }
 }
