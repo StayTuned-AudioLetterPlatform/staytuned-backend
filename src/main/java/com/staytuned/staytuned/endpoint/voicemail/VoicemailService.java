@@ -2,6 +2,7 @@ package com.staytuned.staytuned.endpoint.voicemail;
 
 import com.staytuned.staytuned.aws.S3UploadComponent;
 import com.staytuned.staytuned.domain.User;
+import com.staytuned.staytuned.domain.UserRepository;
 import com.staytuned.staytuned.domain.VoiceMailEntity;
 import com.staytuned.staytuned.domain.VoiceMailRepository;
 import com.staytuned.staytuned.endpoint.user.UserService;
@@ -18,25 +19,29 @@ import java.util.stream.Collectors;
 @Service
 public class VoicemailService {
     private final S3UploadComponent s3UploadComponent;
-    private final UserService userService;
-    private final VoiceMailRepository voiceMailRepository;
-
+    private final UserRepository userRepository;
+    private final VoiceMailRepository voiceMailRepository; // chl
 
     @Transactional
     public Long save(VoicemailRequestDto requestDto){
-        log.info("voice mail save service");
+        User targetUser = userRepository.findByCode(requestDto.getTargetUserCd())
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다. cd = " + requestDto.getTargetUserCd()));
+
         VoiceMailEntity voiceMail =  VoiceMailEntity.builder()
                 .fileUrl(requestDto.getFileUrl())
                 .iconType(requestDto.getIconType())
                 .writer(requestDto.getWriter())
-                .targetUserFK(userService.fineEntity(requestDto.getTargetUserCd()))
+                .targetUserFK(targetUser)
                 .build();
 
         return voiceMailRepository.save(voiceMail).getCode();
     }
 
-    public VoicemailResponseDto getListObjet(Long code, boolean isUser){
-        User user = userService.fineEntity(code);
+    @Transactional(readOnly = true)
+    public VoicemailResponseDto getListObjet(Long userCd, boolean isUser){
+        User user =  userRepository.findByCode(userCd)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다. cd = " + userCd));
+
         List<VoicemailDto> voicemailList = voiceMailRepository.findByTargetUserFK(user)
                 .stream()
                 .map(entity -> new VoicemailDto(entity, isUser))
@@ -50,7 +55,7 @@ public class VoicemailService {
                 .build();
     }
 
-    public void delete(Long code){
-         voiceMailRepository.deleteById(code);
+    public void delete(Long userCd){
+         voiceMailRepository.deleteById(userCd);
     }
 }
