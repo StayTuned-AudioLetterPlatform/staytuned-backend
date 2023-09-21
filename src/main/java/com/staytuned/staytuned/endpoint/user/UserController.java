@@ -1,13 +1,10 @@
 package com.staytuned.staytuned.endpoint.user;
 
-import com.staytuned.staytuned.aws.S3UploadComponent;
-import com.staytuned.staytuned.endpoint.voicemail.VoicemailService;
 import com.staytuned.staytuned.security.jwt.LoginUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 
 @Slf4j

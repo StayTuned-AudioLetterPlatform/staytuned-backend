@@ -1,7 +1,5 @@
 package com.staytuned.staytuned.error;
 
-import io.jsonwebtoken.MalformedJwtException;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 

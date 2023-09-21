@@ -15,9 +15,10 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 
-@Configuration
+
 @EnableWebSecurity
 @RequiredArgsConstructor
+@Configuration
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
@@ -34,11 +35,10 @@ public class SecurityConfig {
                 .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .headers().frameOptions().disable()
                 .and()
-//                .authorizeRequests(authorizeRequests ->
-//                        authorizeRequests
-//                                .antMatchers("/api/v1/voicemail/*").permitAll()
-//                                .anyRequest().authenticated())
-
+                .authorizeRequests(authorizeRequests ->
+                        authorizeRequests
+                                .antMatchers("/api/v1/voicemail/*","/h2-console/*").permitAll()
+                                .anyRequest().authenticated())
                 .oauth2Login()
                 .authorizationEndpoint()
                     .authorizationRequestRepository(cookieAuthorizationRequestRepository)
@@ -59,7 +59,6 @@ public class SecurityConfig {
         config.addAllowedOriginPattern("*");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
-
         source.registerCorsConfiguration("/**", config);
         return source;
     }
