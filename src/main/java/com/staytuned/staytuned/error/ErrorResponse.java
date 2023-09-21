@@ -13,7 +13,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class ErrorResponse {
-    private int status;
+    private HttpStatus status;
     private String code;
     private String message;
     private List<ErrorField> errors; //
